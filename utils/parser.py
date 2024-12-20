@@ -27,11 +27,13 @@ def get_parser():
 
     # Dataset and model paths
     parser.add_argument('--dataset_path', type=str, required=True, help='Path to the dataset root directory')
-    parser.add_argument('--save_model_path', type=str, default='./model.pth', help='Path to save the trained model')
+    parser.add_argument('--save_model_path', type=str, default='./checkpoints', help='Path to save the trained model')
 
     # Pretrained weights and resume training
     parser.add_argument('--use_pretrained', action='store_true', help='Use pretrained weights')
     parser.add_argument('--resume_training', action='store_true', help='Resume training from a checkpoint')
     parser.add_argument('--checkpoint_path', type=str, default='', help='Path to the checkpoint file if resuming training')
-
+    
+    # save_period weights epochs number
+    parser.add_argument('--save_period', type=int, default=10, help='Number of training epochs')
     return parser
