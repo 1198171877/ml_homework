@@ -1,4 +1,4 @@
-import torch
+import torch 
 import torch.nn as nn
 
 class UNet(nn.Module):
@@ -84,12 +84,11 @@ class UNet(nn.Module):
 
         # Final output
         out = self.final_conv(d1)
-        return out
+        return torch.softmax(out, dim=1)
 
 # Example usage
 if __name__ == "__main__":
-    num_classes = 3  # Example number of classes
-    model = UNet(in_channels=3, num_classes=num_classes, base_filters=64, input_size=(256, 256))
-    x = torch.randn(8, 3, *model.input_size)  # Example input
+    model = UNet(in_channels=3, num_classes=2,input_size=(256,256))
+    x = torch.randn(1, 3, 256, 256)  # Example input
     output = model(x)
     print(output.shape)
