@@ -12,9 +12,11 @@ _deps
 CMakeUserPresets.json
 checkpoints/
 Checkpoints
+checkpoints*
 CheckpointsCondition
 CIFAR10/
 **/__pycache__
 # vscode workspace
 diffusion.code-workspace
 datasets/*
+runs/*
