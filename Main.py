@@ -6,7 +6,7 @@ from torchvision import transforms
 import os
 from utils.parser import get_parser
 from tqdm import tqdm
-from torch.utils import tensorboard
+from torch.utils.tensorboard.writer import SummaryWriter
 from models.Dataloader import SegmentationDataset
 from models.Unet import UNet
 
@@ -17,9 +17,10 @@ def train_one_epoch(model, dataloader, criterion, optimizer, device, epoch, writ
 
     for images, masks in progress_bar:
         images, masks = images.to(device), masks.to(device)
-
+        
+        masks = masks.squeeze(1).long()
         optimizer.zero_grad()
-        outputs = model(images)
+        outputs = model(images)  
         loss = criterion(outputs, masks)
         loss.backward()
         optimizer.step()
@@ -27,7 +28,7 @@ def train_one_epoch(model, dataloader, criterion, optimizer, device, epoch, writ
         running_loss += loss.item()
         progress_bar.set_postfix(loss=loss.item())
 
-    avg_loss = running_loss / len(dataloader)
+    avg_loss = running_loss / len(dataloader.dataset)
     writer.add_scalar('Train Loss', avg_loss, epoch)
     return avg_loss
 
@@ -37,11 +38,12 @@ def validate(model, dataloader, criterion, device, epoch, writer):
     with torch.no_grad():
         for images, masks in dataloader:
             images, masks = images.to(device), masks.to(device)
+            masks = masks.squeeze(1).long()
             outputs = model(images)
             loss = criterion(outputs, masks)
             validation_loss += loss.item()
 
-    avg_loss = validation_loss / len(dataloader)
+    avg_loss = validation_loss / len(dataloader.dataset)
     writer.add_scalar('Validation Loss', avg_loss, epoch)
     return avg_loss
 
@@ -53,7 +55,7 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # TensorBoard writer
-    writer = tensorboard.SummaryWriter()
+    writer = SummaryWriter()
 
     # Data transforms
     transform = transforms.Compose([
@@ -61,8 +63,8 @@ def main():
     ])
 
     # Load datasets
-    train_dataset = SegmentationDataset(args.dataset_path, split='train', transform=transform)
-    test_dataset = SegmentationDataset(args.dataset_path, split='test', transform=transform)
+    train_dataset = SegmentationDataset(args.dataset_path, split='train')#, transform=transform)
+    test_dataset = SegmentationDataset(args.dataset_path, split='test')#, transform=transform)
 
     train_loader = DataLoader(train_dataset, batch_size=args.train_batch_size, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=args.test_batch_size, shuffle=False)
@@ -96,12 +98,12 @@ def main():
         val_loss = validate(model, test_loader, criterion, device, epoch, writer)
 
         print(f"Epoch {epoch+1}/{args.epochs}, Train Loss: {train_loss:.4f}, Validation Loss: {val_loss:.4f}")
-
-        # Save checkpoint
-        torch.save({
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
-        }, args.save_model_path)
+        if (epoch+1)%args.save_period == 0:
+            # Save checkpoint
+            torch.save({
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+            }, os.path.join(args.save_model_path,str(epoch+1)+'_dict.pth'))
 
     writer.close()
 
