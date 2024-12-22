@@ -9,6 +9,7 @@ from tqdm import tqdm
 from torch.utils.tensorboard.writer import SummaryWriter
 from models.Dataloader import SegmentationDataset
 from models.Unet import UNet
+from models.attention_Unet import UNetWithAttention
 import numpy as np
 
 def calculate_iou(pred, target, num_classes):
@@ -140,6 +141,12 @@ def validate(model, dataloader, criterion, device, epoch, writer, num_classes):
 def main():
     parser = get_parser()
     args = parser.parse_args()
+    # Get attention type
+    attention = args.atten
+
+    # Check checkpoints path existence
+    if not os.path.exists(args.save_model_path):
+        os.mkdir(args.save_model_path)
 
     # Device configuration
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -160,7 +167,8 @@ def main():
     test_loader = DataLoader(test_dataset, batch_size=args.test_batch_size, shuffle=False)
 
     # Model setup
-    model = UNet(in_channels=3, num_classes=args.num_classes).to(device)
+    # model = UNet(in_channels=3, num_classes=args.num_classes).to(device)
+    model = UNetWithAttention(in_channels=3,num_classes=args.num_classes,attention_type=attention).to(device)
 
     if args.use_pretrained:
         print("Using pretrained weights")
