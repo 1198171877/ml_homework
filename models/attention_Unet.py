@@ -31,6 +31,53 @@ class LightweightAttention(nn.Module):
         attn = self.conv2(attn)
         attn = self.sigmoid(attn)
         return x * attn
+class SelfAttention(nn.Module):
+    def __init__(self, channel, reduction=4):
+        super(SelfAttention, self).__init__()
+        self.query_conv = nn.Conv2d(channel, channel // 8, kernel_size=1)
+        self.key_conv = nn.Conv2d(channel, channel // 8, kernel_size=1)
+        self.value_conv = nn.Conv2d(channel, channel, kernel_size=1)
+        self.softmax = nn.Softmax(dim=-1)
+        self.reduction = reduction  # Reduction factor for downsampling
+        self.downsample = nn.MaxPool2d(kernel_size=reduction)
+
+    def forward(self, x):
+        batch, channel, height, width = x.size()
+        x_down = self.downsample(x)  # Downsample input
+        query = self.query_conv(x_down).view(batch, -1, x_down.size(2) * x_down.size(3)).permute(0, 2, 1)
+        key = self.key_conv(x_down).view(batch, -1, x_down.size(2) * x_down.size(3))
+        value = self.value_conv(x_down).view(batch, -1, x_down.size(2) * x_down.size(3)).permute(0, 2, 1)
+
+        attention = self.softmax(torch.bmm(query, key))
+        out = torch.bmm(attention, value).permute(0, 2, 1).view(batch, channel, x_down.size(2), x_down.size(3))
+        out = nn.functional.interpolate(out, size=(height, width), mode='bilinear', align_corners=False)  # Upsample
+        return out + x  # Residual connection
+
+
+class SparseAttention(nn.Module):
+    def __init__(self, channel, reduction=16, downsample_factor=4):
+        super(SparseAttention, self).__init__()
+        self.query_conv = nn.Conv2d(channel, channel // reduction, kernel_size=1)
+        self.key_conv = nn.Conv2d(channel, channel // reduction, kernel_size=1)
+        self.value_conv = nn.Conv2d(channel, channel, kernel_size=1)
+        self.softmax = nn.Softmax(dim=-1)
+        self.downsample = nn.MaxPool2d(kernel_size=downsample_factor)
+
+    def forward(self, x):
+        batch, channel, height, width = x.size()
+        x_down = self.downsample(x)  # Downsample input
+        query = self.query_conv(x_down).view(batch, -1, x_down.size(2) * x_down.size(3)).permute(0, 2, 1)
+        key = self.key_conv(x_down).view(batch, -1, x_down.size(2) * x_down.size(3))
+        value = self.value_conv(x_down).view(batch, -1, x_down.size(2) * x_down.size(3)).permute(0, 2, 1)
+
+        attention = torch.bmm(query, key)
+        attention = attention.masked_fill(attention < attention.mean(), 0)
+        attention = self.softmax(attention)
+
+        out = torch.bmm(attention, value).permute(0, 2, 1).view(batch, channel, x_down.size(2), x_down.size(3))
+        out = nn.functional.interpolate(out, size=(height, width), mode='bilinear', align_corners=False)  # Upsample
+        return out + x  # Residual connection
+
 
 class UNetWithAttention(nn.Module):
     def __init__(self, in_channels=1, num_classes=2, base_filters=64, attention_type='SE'):
@@ -86,6 +133,16 @@ class UNetWithAttention(nn.Module):
             self.attention3 = LightweightAttention(base_filters * 4)
             self.attention2 = LightweightAttention(base_filters * 2)
             self.attention1 = LightweightAttention(base_filters)
+        elif attention_type == 'SelfAttention':
+            self.attention4 = SelfAttention(base_filters * 8)
+            self.attention3 = SelfAttention(base_filters * 4)
+            self.attention2 = SelfAttention(base_filters * 2)
+            self.attention1 = SelfAttention(base_filters)
+        elif attention_type == 'SparseAttention':
+            self.attention4 = SparseAttention(base_filters * 8)
+            self.attention3 = SparseAttention(base_filters * 4)
+            self.attention2 = SparseAttention(base_filters * 2)
+            self.attention1 = SparseAttention(base_filters)
         else:
             raise ValueError("Unsupported attention type. Choose either 'SE' or 'LightweightAttention'.")
 
@@ -130,7 +187,7 @@ class UNetWithAttention(nn.Module):
 
 # Example usage
 if __name__ == "__main__":
-    model = UNetWithAttention(in_channels=3, num_classes=2, attention_type='LightweightAttention')
-    x = torch.randn(1, 3, 256, 256)  # Example input
+    model = UNetWithAttention(in_channels=3, num_classes=2, attention_type='SelfAttention').to('cuda')
+    x = torch.randn(1, 3, 256, 256,device='cuda')  # Example input
     output = model(x)
     print(output.shape)
