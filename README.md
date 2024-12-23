@@ -30,3 +30,9 @@ python3 Main.py --image_height 256 --image_width 256 --num_classes 2  --dataset_
  ```bash 
 tensorboard  --port=1937 --logdir runs 
 ```
+</br> check localhost:1937 for detail<br>
+
+## Todo
+1. add tensorboard logs read
+2. add reducion support in parser.py
+3. add more blocks suport
