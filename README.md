@@ -27,6 +27,6 @@ python3 Main.py --image_height 256 --image_width 256 --num_classes 2  --dataset_
 
 ## Visual training process
 </br>default "runs" directory will be created automatically,and you can do in terminal</br>
-        ```bash 
-        tensorboard  --port=1937 --logdir runs 
-        ```
+ ```bash 
+tensorboard  --port=1937 --logdir runs 
+```
