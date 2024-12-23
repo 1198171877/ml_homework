@@ -7,9 +7,14 @@
 ## Usages
 ### examples
 </br> 
-''' 
+<python>''' 
 python3 Main.py --image_height 256 --image_width 256 --num_classes 2  --dataset_path ./datasets/SOS/palsar --epochs 100 
 '''
 </br>
 
-</br> check utils/parser.py for detail</br>
+### other options
+</br> check utils/parser.py for details</br>
+
+## Visual training process
+</br> default "runs" directory will be created automatically,and you can do 
+        "tensorboard  --port=1937 --logdir runs"  to check </br>
