@@ -1,5 +1,9 @@
 # For machine learning course
-
+## environment
+</br> run </br>
+```bash
+pip3 install -r requirements.txt
+```
 ## Dataset
 </br> put your dataset in datasets,orginize as two-class segmentation task </br>
 </br> can also download SOS datasets </br>
