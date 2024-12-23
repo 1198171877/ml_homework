@@ -2,6 +2,12 @@
 ## environment
 </br> run </br>
 ```bash
+conda create -n unet python=3.11
+```
+```bash
+conda activate unet
+```
+```bash
 pip3 install -r requirements.txt
 ```
 ## Dataset
