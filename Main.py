@@ -167,8 +167,10 @@ def main():
     test_loader = DataLoader(test_dataset, batch_size=args.test_batch_size, shuffle=False)
 
     # Model setup
-    # model = UNet(in_channels=3, num_classes=args.num_classes).to(device)
-    model = UNetWithAttention(in_channels=3,num_classes=args.num_classes,attention_type=attention).to(device)
+    if attention is not None:
+        model = UNet(in_channels=3, num_classes=args.num_classes).to(device)
+    else :
+        model = UNetWithAttention(in_channels=3,num_classes=args.num_classes,attention_type=attention).to(device)
 
     if args.use_pretrained:
         print("Using pretrained weights")
