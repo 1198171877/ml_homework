@@ -1,5 +1,10 @@
 # For machine learning course
+
 ## environment
+```bash
+git clone https://github.com/1198171877/ml_homework.git
+```
+
 </br> run </br>
 ```bash
 conda create -n unet python=3.11
