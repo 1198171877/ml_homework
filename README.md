@@ -1,4 +1,6 @@
 # For machine learning course
+## describe
+</br> SE、lightweight attention、self-attention、sparse-attention and original U-net </br>
 
 ## environment
 ```bash
