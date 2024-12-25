@@ -44,3 +44,4 @@ tensorboard  --port=1937 --logdir runs
 2. add reducion support in parser.py
 3. add more blocks suport
 4. finish test.py
+5. add docker image
