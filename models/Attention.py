@@ -34,14 +34,14 @@ class LightweightAttention(nn.Module):
         attn = self.sigmoid(attn)
         return x * attn
 class SelfAttention(nn.Module):
-    def __init__(self, channel, reduction=4):
+    def __init__(self, channel, reduction=1):
         super(SelfAttention, self).__init__()
         self.query_conv = nn.Conv2d(channel, channel // 8, kernel_size=1)
         self.key_conv = nn.Conv2d(channel, channel // 8, kernel_size=1)
         self.value_conv = nn.Conv2d(channel, channel, kernel_size=1)
         self.softmax = nn.Softmax(dim=-1)
         self.reduction = reduction  # Reduction factor for downsampling
-        self.downsample = nn.MaxPool2d(kernel_size=reduction)
+        self.downsample = nn.MaxPool2d(kernel_size=reduction) if reduction>1 else nn.Identity()
 
     def forward(self, x):
         batch, channel, height, width = x.size()
@@ -63,7 +63,7 @@ class SparseAttention(nn.Module):
         self.key_conv = nn.Conv2d(channel, channel // reduction, kernel_size=1)
         self.value_conv = nn.Conv2d(channel, channel, kernel_size=1)
         self.softmax = nn.Softmax(dim=-1)
-        self.downsample = nn.MaxPool2d(kernel_size=downsample_factor)
+        self.downsample = nn.MaxPool2d(kernel_size=downsample_factor) if downsample_factor > 1 else nn.Identity()
 
     def forward(self, x):
         batch, channel, height, width = x.size()
