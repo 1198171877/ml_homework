@@ -29,7 +29,7 @@ def get_parser():
     parser.add_argument('--weight_decay', type=float, default=1e-5, help='Weight decay for optimizer')
 
     # Dataset and model paths
-    parser.add_argument('--dataset_path', type=str, required=True, help='Path to the dataset root directory')
+    parser.add_argument('--dataset_path', type=str,default='./SOS/palsar' ,required=False, help='Path to the dataset root directory')
     parser.add_argument('--save_model_path', type=str, default='./checkpoints_selfattention', help='Path to save the trained model')
 
     # Pretrained weights and resume training

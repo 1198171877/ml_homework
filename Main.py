@@ -108,7 +108,7 @@ def main():
     test_loader = DataLoader(test_dataset, batch_size=args.test_batch_size, shuffle=False)
 
     # Model setup
-    if attention is not None:
+    if attention is  None:
         print("using unet!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         model = UNet(in_channels=3, num_classes=args.num_classes).to(device)
     else :

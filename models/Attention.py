@@ -57,7 +57,7 @@ class SelfAttention(nn.Module):
 
 
 class SparseAttention(nn.Module):
-    def __init__(self, channel, reduction=16, downsample_factor=4):
+    def __init__(self, channel, reduction=8, downsample_factor=4):
         super(SparseAttention, self).__init__()
         self.query_conv = nn.Conv2d(channel, channel // reduction, kernel_size=1)
         self.key_conv = nn.Conv2d(channel, channel // reduction, kernel_size=1)
