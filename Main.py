@@ -109,6 +109,7 @@ def main():
 
     # Model setup
     if attention is not None:
+        print("using unet!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         model = UNet(in_channels=3, num_classes=args.num_classes).to(device)
     else :
         model = UNetWithAttention(in_channels=3,num_classes=args.num_classes,attention_type=attention).to(device)

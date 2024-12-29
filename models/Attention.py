@@ -34,7 +34,7 @@ class LightweightAttention(nn.Module):
         attn = self.sigmoid(attn)
         return x * attn
 class SelfAttention(nn.Module):
-    def __init__(self, channel, reduction=1):
+    def __init__(self, channel, reduction=4):
         super(SelfAttention, self).__init__()
         self.query_conv = nn.Conv2d(channel, channel // 8, kernel_size=1)
         self.key_conv = nn.Conv2d(channel, channel // 8, kernel_size=1)
