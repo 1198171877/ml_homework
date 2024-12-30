@@ -12,11 +12,12 @@ from models.Unet import UNet
 from models.attention_Unet import UNetWithAttention
 import numpy as np
 from utils.miou_acc import calculate_metrics
-
+import cv2 as cv
 def test(testloader,args):
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
+    if not os.path.exists('./results'):
+        os.mkdir('./results')
     
     num_classes = args.num_classes
     # Get attention type
@@ -33,6 +34,8 @@ def test(testloader,args):
         print("using {}".format(attention))
     model.load_state_dict(torch.load(args.test_checkpoint,map_location=device)['model_state_dict'])
     avg_miou,avg_acc = 0,0
+    save_range = 3
+    i=0
     for images,masks in tqdm(testloader):
         with torch.no_grad():
 
@@ -44,6 +47,14 @@ def test(testloader,args):
             miou, accuracy = calculate_metrics(preds, masks, num_classes)
             avg_miou+=miou
             avg_acc+=accuracy
+            i+=1
+
+            preds = preds.squeeze(0)
+            masks = masks.squeeze(0)
+            if i<=save_range:
+
+                cv.imwrite('results/'+str(i)+'.png',masks.cpu().numpy()*255)
+                cv.imwrite('results/'+str(i)+'.jpg',preds.cpu().numpy()*255)
     avg_acc/=len(testloader.dataset)
     avg_miou/=len(testloader.dataset)
     print(avg_miou, avg_acc)
@@ -54,7 +65,7 @@ if __name__ == '__main__':
     parser = get_parser()
     args = parser.parse_args()
     test_dataset = SegmentationDataset(args.dataset_path, split='test')
-    testloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
+    testloader = DataLoader(test_dataset, batch_size=1, shuffle=True)
 
     test(testloader,args=args)
 
