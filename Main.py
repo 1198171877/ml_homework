@@ -106,7 +106,7 @@ def main():
 
     train_loader = DataLoader(train_dataset, batch_size=args.train_batch_size, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=args.test_batch_size, shuffle=False)
-
+    val_miou_old = 0
     # Model setup
     if attention is  None:
         print("using unet!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -148,7 +148,12 @@ def main():
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
             }, os.path.join(args.save_model_path, f'epoch_{epoch+1}_checkpoint.pth'))
-
+        if val_miou > val_miou_old:
+            torch.save({
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+            }, os.path.join(args.save_model_path, f'best.pth'))
+            val_miou_old = val_miou
     writer.close()
 
 if __name__ == "__main__":
